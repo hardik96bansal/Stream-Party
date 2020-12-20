@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     public User getUserByUsername(String username){
-        return new User("Hardik", "pass", true, "img1");
+        return new User("Hardik", "pass", true, "img1 ");
     }
     
 }
