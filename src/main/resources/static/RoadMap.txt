@@ -1,17 +1,17 @@
 User can:
     - Signup and login
-    - Create groups
-    - Search groups
-    - Join groups
-    - Kick user from group
+    - Create rooms
+    - Search rooms
+    - Join rooms
+    - Kick user from room
     - Send Friend Requests
     - Accept Friend Requests
-    - Invite friends to groups
+    - Invite friends to rooms
     - Send Messages
     - React to message
     - Play/ pause 
 
-Groups 
+Rooms 
     - Can be created
     - Can be public/ private
     - Have maximum capacity

@@ -14,13 +14,13 @@ import javax.persistence.Id;
 
 
 @Entity
-public class Group implements Serializable{
+public class Room implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private String groupId;
+    private String roomId;
 
-    private String groupName;
+    private String roomName;
     private String privacy;
     private User admin;
     private boolean isActive;
@@ -64,8 +64,8 @@ public class Group implements Serializable{
         } 
     }
 
-    public Group(String groupName, User admin, String privacy) {
-        this.groupName = groupName;
+    public Room(String roomName, User admin, String privacy) {
+        this.roomName = roomName;
         this.admin = admin;
         this.privacy = privacy;
         this.isActive = true;
@@ -75,7 +75,7 @@ public class Group implements Serializable{
         connectedMembers.add(admin);
     }
 
-    public Group() {
+    public Room() {
     }
 
     public String getPrivacy() {
@@ -102,20 +102,20 @@ public class Group implements Serializable{
         this.lastActive = lastActive;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getRoomId() {
+        return roomId;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 
-    public String getGroupName() {
-        return groupName;
+    public String getRoomName() {
+        return roomName;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
     }
 
     public User getAdmin() {

@@ -22,7 +22,7 @@ public class User implements Serializable{
     private String image;
 
     @ElementCollection
-    private List<Group> groups;
+    private List<Room> rooms;
 
     public String getUsername() {
         return username;
@@ -61,23 +61,23 @@ public class User implements Serializable{
         this.password = password;
         this.isActive = isActive;
         this.image = image;
-        this.groups = new ArrayList<Group>();
+        this.rooms = new ArrayList<Room>();
     }
 
     public User() {
     }
 
-    public List<Group> getGroups() {
-        return groups;
+    public List<Room> getRooms() {
+        return rooms;
     }
 
-    public void addGroup(Group group) {
-        if(this.groups == null) this.groups = new ArrayList<Group>();
-        this.groups.add(group);
+    public void addRoom(Room room) {
+        if(this.rooms == null) this.rooms = new ArrayList<Room>();
+        this.rooms.add(room);
     }
 
-    public void removeGroup(Group group){
-        if(this.groups!=null) this.groups.remove(group);
+    public void removeRoom(Room room){
+        if(this.rooms!=null) this.rooms.remove(room);
     }
 
 }

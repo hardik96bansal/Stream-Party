@@ -1,6 +1,6 @@
 package com.streamparty.backend.service;
 
-import com.streamparty.backend.model.Group;
+import com.streamparty.backend.model.Room;
 import com.streamparty.backend.model.User;
 import com.streamparty.backend.repository.UserRepository;
 
@@ -29,14 +29,14 @@ public class UserService {
         userRepository.deleteById(username);
     }
 
-    public void addUserToGroup(String username, Group group){
+    public void addUserToRoom(String username, Room room){
         User currUser = userRepository.findByUsername(username);
-        if(currUser != null) currUser.addGroup(group);
+        if(currUser != null) currUser.addRoom(room);
     }
 
-    public void removeUserFromGroup(String username, Group group){
+    public void removeUserFromRoom(String username, Room room){
         User currUser = userRepository.findByUsername(username);
-        if(currUser!=null) currUser.removeGroup(group);
+        if(currUser!=null) currUser.removeRoom(room);
     }
 
 }
