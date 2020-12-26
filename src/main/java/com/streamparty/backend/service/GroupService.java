@@ -19,6 +19,10 @@ public class GroupService {
         return groupRepository.findByGroupId(groupId);
     }
 
+    public Group getGroupByGroupName(String groupName){
+        return groupRepository.findByGroupName(groupName);
+    }
+
     public void createGroup(String groupName, User user, String privacy) {
         Group newGroup = new Group(groupName, user, privacy);
         groupRepository.save(newGroup);

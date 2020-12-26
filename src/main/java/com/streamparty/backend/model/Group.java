@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,9 +24,13 @@ public class Group implements Serializable{
     private String privacy;
     private User admin;
     private boolean isActive;
-    private Set<User> members;
-    private Set<User> connectedMembers;
     private Date lastActive;
+    
+    @ElementCollection
+    private Set<User> members;
+    @ElementCollection
+    private Set<User> connectedMembers;
+    
 
     public void addMember(User user){
         if(this.members==null) members = new HashSet<User>();

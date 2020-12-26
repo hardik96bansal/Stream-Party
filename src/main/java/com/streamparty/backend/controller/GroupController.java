@@ -5,11 +5,15 @@ import com.streamparty.backend.model.User;
 import com.streamparty.backend.service.GroupService;
 import com.streamparty.backend.service.UserService;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 public class GroupController {
 
@@ -22,6 +26,22 @@ public class GroupController {
     @GetMapping("/group/{groupId}")
     public Group getGroupById(@PathVariable("groupId") String groupId){
         return groupService.getGroupById(groupId);
+    }
+
+    @PostMapping("/group")
+    public ResponseEntity<String> createGroup(@RequestBody Group group){
+        Group groupExists = groupService.getGroupByGroupName(group.getGroupName());
+        
+        if(groupExists!=null){
+            return new ResponseEntity<String>("Group name already taken",HttpStatus.BAD_REQUEST);
+        }
+
+        if(group.getGroupName()==null || group.getAdmin()==null || group.getPrivacy()==null){
+            return new ResponseEntity<String>("Invalid data",HttpStatus.BAD_REQUEST);
+        }
+
+        groupService.createGroup(group.getGroupName(), group.getAdmin(), group.getPrivacy());
+        return new ResponseEntity<>("Group Created",HttpStatus.OK);
     }
 
     @GetMapping("group/add/{groupId}/{approver}/{username}")
