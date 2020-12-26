@@ -37,10 +37,4 @@ public class UserController {
     public void deleteUser(@PathVariable String username){
         userService.deleteUser(username);
     }
-
-    @GetMapping("/friend/{user1}/{user2}")
-    public void createFriends(@PathVariable String user1, @PathVariable String user2){
-        userService.addFriend(user1, user2);
-    }
-
 }

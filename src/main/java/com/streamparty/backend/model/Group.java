@@ -17,7 +17,7 @@ public class Group implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long groupId;
+    private String groupId;
 
     private String groupName;
     private String privacy;
@@ -97,11 +97,11 @@ public class Group implements Serializable{
         this.lastActive = lastActive;
     }
 
-    public long getGroupId() {
+    public String getGroupId() {
         return groupId;
     }
 
-    public void setGroupId(long groupId) {
+    public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
 

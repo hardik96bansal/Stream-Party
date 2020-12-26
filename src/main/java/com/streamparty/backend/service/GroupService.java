@@ -15,7 +15,7 @@ public class GroupService {
     @Autowired
     GroupRepository groupRepository;
 
-    public Group getGroupById(long groupId) {
+    public Group getGroupById(String groupId) {
         return groupRepository.findByGroupId(groupId);
     }
 
@@ -24,7 +24,7 @@ public class GroupService {
         groupRepository.save(newGroup);
     }
 
-    public void addMember(long groupId, User user) {
+    public void addMember(String groupId, User user) {
         Group currGroup = groupRepository.findByGroupId(groupId);
         if(currGroup!=null){
             if (currGroup.getMembers() == null)
@@ -34,31 +34,31 @@ public class GroupService {
         }        
     }
 
-    public void removeMember(long groupId, User user) {
+    public void removeMember(String groupId, User user) {
         Group currGroup = groupRepository.findByGroupId(groupId);
         if (currGroup != null) {
-            Set<User> groupMembers = currGroup.getMembers();
-            groupMembers.remove(user);
-            currGroup.setMembers(groupMembers);
+            currGroup.removeMember(user);
             groupRepository.save(currGroup);
         }
     }
 
-    public void connectToGroup(long groupId, User user){
+    public void connectToGroup(String groupId, User user){
         Group currGroup = groupRepository.findByGroupId(groupId);
         if(currGroup != null){
            currGroup.addToConnectedMembers(user);
+           groupRepository.save(currGroup);
         }
     }
 
-    public void disconnetFromGroup(long groupId, User user){
+    public void disconnetFromGroup(String groupId, User user){
         Group currGroup = groupRepository.findByGroupId(groupId);
         if(currGroup != null){
            currGroup.removeFromConnectedMembers(user);
+           groupRepository.save(currGroup);
         }
     }
 
-    public void makeGroupPublic(long groupId){
+    public void makeGroupPublic(String groupId){
         Group currGroup = groupRepository.findByGroupId(groupId);
         if(currGroup != null){
             currGroup.setPrivacy(GroupConstants.PRIVACY_PUBLIC);
@@ -66,7 +66,7 @@ public class GroupService {
         }
     }
 
-    public void makeGroupPrivate(long groupId){
+    public void makeGroupPrivate(String groupId){
         Group currGroup = groupRepository.findByGroupId(groupId);
         if(currGroup != null){
             currGroup.setPrivacy(GroupConstants.PRIVACY_PRIVATE);
