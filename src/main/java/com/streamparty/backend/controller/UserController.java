@@ -1,5 +1,9 @@
 package com.streamparty.backend.controller;
 
+import java.util.List;
+
+import com.streamparty.backend.dto.RoomDto;
+import com.streamparty.backend.dto.UserDto;
 import com.streamparty.backend.model.User;
 import com.streamparty.backend.service.UserService;
 
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 public class UserController {
 
@@ -19,8 +24,13 @@ public class UserController {
     UserService userService;
     
     @GetMapping("/user/{username}")
-    public User getUserbyUsername(@PathVariable("username") String username){
-        return userService.getUserByUsername(username);
+    public UserDto getUserbyUsername(@PathVariable("username") String username){
+        return userService.getUserDtoByUsername(username);
+    }
+
+    @GetMapping("user/{username}/room")
+    public List<RoomDto> getUserRooms(@PathVariable("username") String username){
+        return userService.getUserRooms(username);
     }
 
     @PostMapping("/user")
@@ -37,4 +47,5 @@ public class UserController {
     public void deleteUser(@PathVariable String username){
         userService.deleteUser(username);
     }
+
 }

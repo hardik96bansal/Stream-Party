@@ -1,8 +1,12 @@
 package com.streamparty.backend.service;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.streamparty.backend.constants.RoomConstants;
+import com.streamparty.backend.dto.RoomDto;
+import com.streamparty.backend.dto.UserDto;
 import com.streamparty.backend.model.Room;
 import com.streamparty.backend.model.User;
 import com.streamparty.backend.repository.RoomRepository;
@@ -21,15 +25,34 @@ public class RoomService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    UserService userService;
+
     public Room getRoomById(String roomId) {
         return roomRepository.findByRoomId(roomId);
     }
 
-    public Room getRoomByRoomName(String roomName){
-        return roomRepository.findByRoomName(roomName);
+    public RoomDto getRoomDtoById(String roomId){
+        Room room = roomRepository.findByRoomId(roomId);
+        if(room == null) return null;
+        return new RoomDto(room);
     }
 
-    public Room createRoom(String roomName, User user, String privacy) {
+    public List<UserDto> getRoomMembers(String roomId){
+        Room room = roomRepository.findByRoomId(roomId);
+        if(room==null || room.getMembers()==null) return null;
+        return room.getMembers().stream().map(user -> new UserDto(user)).collect(Collectors.toList());
+    }
+
+    public UserDto getRoomAdmin(String roomId){
+        Room room = roomRepository.findByRoomId(roomId);
+        if(room==null || room.getAdmin()==null) return null;
+        return new UserDto(room.getAdmin());
+    }
+
+    public Room createRoom(String roomName, String username, String privacy) {
+        User user = userService.getUserByUsername(username);
+
         RandomString randomString = new RandomString(8);
         String roomId = randomString.nextString();
 
@@ -47,38 +70,16 @@ public class RoomService {
         return newRoom;
     }
 
-    public void addMember(String roomId, User user) {
-        Room currRoom = roomRepository.findByRoomId(roomId);
-        if(currRoom!=null){
-            if (currRoom.getMembers() == null)
-                currRoom.setMembers(new HashSet<User>());
-            currRoom.addMember(user);
-            roomRepository.save(currRoom);
-        }        
-    }
+    public Room joinRoom(String roomId, String username) {
+        Room room = roomRepository.findByRoomId(roomId);
+        User user = userRepository.findByUsername(username);
 
-    public void removeMember(String roomId, User user) {
-        Room currRoom = roomRepository.findByRoomId(roomId);
-        if (currRoom != null) {
-            currRoom.removeMember(user);
-            roomRepository.save(currRoom);
-        }
-    }
+        user.getRooms().add(room);
+        room.getMembers().add(user);
 
-    public void connectToRoom(String roomId, User user){
-        Room currRoom = roomRepository.findByRoomId(roomId);
-        if(currRoom != null){
-           currRoom.addToConnectedMembers(user);
-           roomRepository.save(currRoom);
-        }
-    }
-
-    public void disconnetFromRoom(String roomId, User user){
-        Room currRoom = roomRepository.findByRoomId(roomId);
-        if(currRoom != null){
-           currRoom.removeFromConnectedMembers(user);
-           roomRepository.save(currRoom);
-        }
+        userRepository.save(user);
+        
+        return room;
     }
 
     public void makeRoomPublic(String roomId){
@@ -89,10 +90,11 @@ public class RoomService {
         }
     }
 
-    public void makeRoomPrivate(String roomId){
+    public void makeRoomPrivate(String roomId, String password){
         Room currRoom = roomRepository.findByRoomId(roomId);
         if(currRoom != null){
             currRoom.setPrivacy(RoomConstants.PRIVACY_PRIVATE);
+            currRoom.setPassword(password);
             roomRepository.save(currRoom);
         }
     }

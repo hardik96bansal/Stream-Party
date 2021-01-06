@@ -17,6 +17,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.streamparty.backend.constants.RoomConstants;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -24,7 +26,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 
 @Entity
-public class Room implements Serializable{
+public class Room extends AuditModel{
 
     
     @Id
@@ -37,6 +39,7 @@ public class Room implements Serializable{
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_username", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private User admin;
     private boolean isActive;
     private Date lastActive;
@@ -45,10 +48,10 @@ public class Room implements Serializable{
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.PERSIST,CascadeType.MERGE},
             mappedBy = "rooms")
-    //@JsonBackReference
+    @JsonIgnore
     private Set<User> members;
-    @ElementCollection
-    private Set<User> connectedMembers;
+
+    private String password;
     
 
     public void addMember(User user){
@@ -60,39 +63,20 @@ public class Room implements Serializable{
         if(this.members!=null){
             members.remove(user);
         }
-        if(this.connectedMembers!=null){
-            connectedMembers.remove(user);
-        }
-    }
-
-    public void addToConnectedMembers(User user){
-        if(connectedMembers==null) connectedMembers = new HashSet<User>();
-        connectedMembers.add(user);
-        this.setActive(true);
-
-        Date currDate = Calendar.getInstance().getTime();
-        this.setLastActive(currDate);
-    }
-
-    public void removeFromConnectedMembers(User user){
-        if(connectedMembers!=null){
-            connectedMembers.remove(user);
-            if(connectedMembers.size()==0){
-                this.setActive(false);
-            }
-        } 
     }
 
     public Room(String roomId, String roomName, User admin, String privacy) {
         this.roomId = roomId;
         this.roomName = roomName;
         this.admin = admin;
-        this.privacy = privacy;
+
+        if(privacy.equals(RoomConstants.PRIVACY_PUBLIC)) this.privacy = privacy;
+        else{
+            this.privacy = RoomConstants.PRIVACY_PRIVATE;
+            this.password = privacy;
+        }
         this.isActive = true;
         this.members = new HashSet<User>();
-        this.connectedMembers = new HashSet<User>();
-        //members.add(admin);
-        //connectedMembers.add(admin);
     }
 
     public Room() {
@@ -105,14 +89,6 @@ public class Room implements Serializable{
     public void setPrivacy(String privacy) {
         this.privacy = privacy;
     }   
-
-    public Set<User> getConnectedMembers() {
-        return connectedMembers;
-    }
-
-    public void setConnectedMembers(Set<User> connectedMembers) {
-        this.connectedMembers = connectedMembers;
-    }
 
     public Date getLastActive() {
         return lastActive;
@@ -160,5 +136,13 @@ public class Room implements Serializable{
 
     public void setMembers(Set<User> members) {
         this.members = members;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

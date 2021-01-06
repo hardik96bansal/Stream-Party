@@ -1,5 +1,11 @@
 package com.streamparty.backend.service;
 
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import com.streamparty.backend.dto.RoomDto;
+import com.streamparty.backend.dto.UserDto;
 import com.streamparty.backend.model.Room;
 import com.streamparty.backend.model.User;
 import com.streamparty.backend.repository.UserRepository;
@@ -13,8 +19,21 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
 
+    public UserDto getUserDtoByUsername(String username){
+        User user = userRepository.findByUsername(username);
+        if(user == null) return null;
+        return new UserDto(user);
+    }
+
     public User getUserByUsername(String username){
-        return userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
+        return user;
+    }
+
+    public List<RoomDto> getUserRooms(String username){
+        User user = userRepository.findByUsername(username);
+        if(user == null || user.getRooms()==null) return null;
+        return user.getRooms().stream().map(room -> new RoomDto(room)).collect(Collectors.toList());
     }
 
     public void createNewUser(User newUser){
@@ -29,14 +48,6 @@ public class UserService {
         userRepository.deleteById(username);
     }
 
-    public void addUserToRoom(String username, Room room){
-        User currUser = userRepository.findByUsername(username);
-        if(currUser != null) currUser.addRoom(room);
-    }
 
-    public void removeUserFromRoom(String username, Room room){
-        User currUser = userRepository.findByUsername(username);
-        if(currUser!=null) currUser.removeRoom(room);
-    }
 
 }

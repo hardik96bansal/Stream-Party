@@ -1,5 +1,10 @@
 package com.streamparty.backend.controller;
 
+import java.util.List;
+
+import com.streamparty.backend.constants.RoomConstants;
+import com.streamparty.backend.dto.RoomDto;
+import com.streamparty.backend.dto.UserDto;
 import com.streamparty.backend.model.Room;
 import com.streamparty.backend.model.User;
 import com.streamparty.backend.service.RoomService;
@@ -30,99 +35,43 @@ public class RoomController {
 
     @PostMapping("/room/{username}")
     public ResponseEntity<String> createRoom(@RequestBody Room room, @PathVariable String username){
-        Room roomExists = roomService.getRoomByRoomName(room.getRoomName());
-        
-        if(roomExists!=null){
-            return new ResponseEntity<String>("Room name already taken",HttpStatus.BAD_REQUEST);
-        }
 
         if(room.getRoomName()==null || room.getPrivacy()==null){
             return new ResponseEntity<String>("Invalid data",HttpStatus.BAD_REQUEST);
         }
 
-        room.setAdmin(userService.getUserByUsername(username));
+        Room createdRoom = roomService.createRoom(room.getRoomName(), username, room.getPrivacy());
 
-        Room createdRoom = roomService.createRoom(room.getRoomName(), room.getAdmin(), room.getPrivacy());
-        if(createdRoom!=null){
-            //userService.addUserToRoom(room.getAdmin().getUsername(), createdRoom);
-        }
         return new ResponseEntity<>("Room Created "+createdRoom.getRoomId(),HttpStatus.OK);
     }
-
-    @GetMapping("room/add/{roomId}/{approver}/{username}")
-    public ResponseEntity<String> addMemberToRoom(@PathVariable("roomId") String roomId,
-                                 @PathVariable("approver") String approver, 
-                                 @PathVariable("username") String username){
-
-        User approverUser = userService.getUserByUsername(approver);
-        User addUser = userService.getUserByUsername(username);
-        Room room = roomService.getRoomById(roomId);
-
-        if(approverUser==null || addUser==null || room == null){
-            return new ResponseEntity<>("Invalid values provided",HttpStatus.BAD_REQUEST);
-        }
-
-        if(!room.getAdmin().getUsername().equals(approverUser.getUsername())){
-            return new ResponseEntity<>("Only admin can add",HttpStatus.UNAUTHORIZED);
-        }
-
-        roomService.addMember(roomId, addUser);  
-        room = roomService.getRoomById(roomId);        
-        userService.addUserToRoom(username, room);
-        
-        return new ResponseEntity<>("User added to the room",HttpStatus.OK);  
-    }
-
-    @GetMapping("room/remove/{roomId}/{approver}/{username}")
-    public ResponseEntity<String> removeMemberFromRoom(@PathVariable("roomId") String roomId,
-                                 @PathVariable("approver") String approver, 
-                                 @PathVariable("username") String username){
-
-        User approverUser = userService.getUserByUsername(approver);
-        User removeUser = userService.getUserByUsername(username);
-        Room room = roomService.getRoomById(roomId);
-
-        if(approverUser==null || removeUser==null || room == null){
-            return new ResponseEntity<>("Invalid values provided", HttpStatus.BAD_REQUEST);
-        }
-
-        if(!room.getAdmin().getUsername().equals(approverUser.getUsername()) || removeUser.getUsername().equals(approverUser.getUsername())){
-            roomService.removeMember(roomId, removeUser);
-            userService.removeUserFromRoom(username, room);
-            return new ResponseEntity<>("User removed from room",HttpStatus.OK);
-        }
-
-        return new ResponseEntity<>("Authorization error",HttpStatus.UNAUTHORIZED);
-    }
-
-    @GetMapping("room/connect/{roomId}/{username}")
-    public ResponseEntity<String> connectToRoom(@PathVariable String roomId, @PathVariable String username){
-        User user = userService.getUserByUsername(username);
-        Room room = roomService.getRoomById(roomId);
-
-        if(user==null || room == null){
-            return new ResponseEntity<String>("Invalid values provided", HttpStatus.BAD_REQUEST);
-        }
-
-        roomService.connectToRoom(roomId, user);
-
-        return new ResponseEntity<>("User connected to the room", HttpStatus.OK);
-    }
-
-    @GetMapping("room/disconnect/{roomId}/{username}")
-    public ResponseEntity<String> disconnectFromRoom(@PathVariable String roomId, @PathVariable String username){
-        User user = userService.getUserByUsername(username);
-        Room room = roomService.getRoomById(roomId);
-
-        if(user==null || room == null){
-            return new ResponseEntity<String>("Invalid values provided", HttpStatus.BAD_REQUEST);
-        }
-
-        roomService.disconnetFromRoom(roomId, user);
-
-        return new ResponseEntity<>("User disconnected from the room", HttpStatus.OK);
-    }
-
     
+    @GetMapping("/room/{roomId}/member")
+    public List<UserDto> getRoomMembers(@PathVariable("roomId") String roomId){
+        return roomService.getRoomMembers(roomId);
+    }
+
+    @GetMapping("/room/{roomId}/admin")
+    public UserDto getRoomAdmin(@PathVariable("roomId") String roomId){
+        return roomService.getRoomAdmin(roomId);
+    }
+
+    @PostMapping("room/{roomId}/join/{username}")
+    public ResponseEntity<String> joinRoom(@PathVariable("roomId") String roomId, @PathVariable("username") String username, @RequestBody String password){
+
+        UserDto userDto = userService.getUserDtoByUsername(username);
+        RoomDto roomDto = roomService.getRoomDtoById(roomId);
+        if(userDto==null || roomDto==null){
+            return new ResponseEntity<String>("Invalid data",HttpStatus.BAD_REQUEST);
+        }
+
+        if(roomDto.getPrivacy()==RoomConstants.PRIVACY_PRIVATE && !roomDto.getPassword().equals(password)){
+            return new ResponseEntity<String>("Incorrect credentials",HttpStatus.NETWORK_AUTHENTICATION_REQUIRED);
+        }
+
+        Room room = roomService.joinRoom(roomId, username);
+        if(room!=null) return new ResponseEntity<>(username + " added to " + roomId,HttpStatus.OK);
+
+        return new ResponseEntity<String>("Some Error Occurred",HttpStatus.BAD_REQUEST);
+    }
     
 }
