@@ -5,7 +5,6 @@ import com.streamparty.backend.model.User;
 import com.streamparty.backend.service.RoomService;
 import com.streamparty.backend.service.UserService;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 public class RoomController {
 
     @Autowired
@@ -28,20 +28,25 @@ public class RoomController {
         return roomService.getRoomById(roomId);
     }
 
-    @PostMapping("/room")
-    public ResponseEntity<String> createRoom(@RequestBody Room room){
+    @PostMapping("/room/{username}")
+    public ResponseEntity<String> createRoom(@RequestBody Room room, @PathVariable String username){
         Room roomExists = roomService.getRoomByRoomName(room.getRoomName());
         
         if(roomExists!=null){
             return new ResponseEntity<String>("Room name already taken",HttpStatus.BAD_REQUEST);
         }
 
-        if(room.getRoomName()==null || room.getAdmin()==null || room.getPrivacy()==null){
+        if(room.getRoomName()==null || room.getPrivacy()==null){
             return new ResponseEntity<String>("Invalid data",HttpStatus.BAD_REQUEST);
         }
 
-        roomService.createRoom(room.getRoomName(), room.getAdmin(), room.getPrivacy());
-        return new ResponseEntity<>("Room Created",HttpStatus.OK);
+        room.setAdmin(userService.getUserByUsername(username));
+
+        Room createdRoom = roomService.createRoom(room.getRoomName(), room.getAdmin(), room.getPrivacy());
+        if(createdRoom!=null){
+            //userService.addUserToRoom(room.getAdmin().getUsername(), createdRoom);
+        }
+        return new ResponseEntity<>("Room Created "+createdRoom.getRoomId(),HttpStatus.OK);
     }
 
     @GetMapping("room/add/{roomId}/{approver}/{username}")
@@ -57,7 +62,7 @@ public class RoomController {
             return new ResponseEntity<>("Invalid values provided",HttpStatus.BAD_REQUEST);
         }
 
-        if(room.getAdmin()!=approverUser){
+        if(!room.getAdmin().getUsername().equals(approverUser.getUsername())){
             return new ResponseEntity<>("Only admin can add",HttpStatus.UNAUTHORIZED);
         }
 
@@ -81,7 +86,7 @@ public class RoomController {
             return new ResponseEntity<>("Invalid values provided", HttpStatus.BAD_REQUEST);
         }
 
-        if(room.getAdmin()==approverUser || removeUser==approverUser){
+        if(!room.getAdmin().getUsername().equals(approverUser.getUsername()) || removeUser.getUsername().equals(approverUser.getUsername())){
             roomService.removeMember(roomId, removeUser);
             userService.removeUserFromRoom(username, room);
             return new ResponseEntity<>("User removed from room",HttpStatus.OK);

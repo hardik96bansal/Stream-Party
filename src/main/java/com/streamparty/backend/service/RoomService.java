@@ -1,19 +1,25 @@
 package com.streamparty.backend.service;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import com.streamparty.backend.constants.RoomConstants;
 import com.streamparty.backend.model.Room;
 import com.streamparty.backend.model.User;
 import com.streamparty.backend.repository.RoomRepository;
+import com.streamparty.backend.repository.UserRepository;
+import com.streamparty.backend.utils.RandomString;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class RoomService {
 
     @Autowired
     RoomRepository roomRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     public Room getRoomById(String roomId) {
         return roomRepository.findByRoomId(roomId);
@@ -23,9 +29,22 @@ public class RoomService {
         return roomRepository.findByRoomName(roomName);
     }
 
-    public void createRoom(String roomName, User user, String privacy) {
-        Room newRoom = new Room(roomName, user, privacy);
-        roomRepository.save(newRoom);
+    public Room createRoom(String roomName, User user, String privacy) {
+        RandomString randomString = new RandomString(8);
+        String roomId = randomString.nextString();
+
+        while(roomRepository.findByRoomId(roomId)!=null){
+            roomId = randomString.nextString();
+        }
+
+        Room newRoom = new Room(roomId, roomName, user, privacy);
+
+        user.getRooms().add(newRoom);
+        newRoom.getMembers().add(user);
+
+        userRepository.save(user);
+        
+        return newRoom;
     }
 
     public void addMember(String roomId, User user) {

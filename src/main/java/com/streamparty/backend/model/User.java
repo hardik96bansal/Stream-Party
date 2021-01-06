@@ -4,24 +4,39 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 @EnableAutoConfiguration
 @Entity
-@Table(name = "sp_users")
 public class User implements Serializable{
     @Id
+    @Access(AccessType.PROPERTY)
     private String username;
     private String password;
     private boolean isActive;
     private String image;
 
-    @ElementCollection
+    //@ElementCollection
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @JoinTable(name = "user_room",
+            joinColumns = { @JoinColumn(name = "user_username") },
+            inverseJoinColumns = { @JoinColumn(name = "room_id") })
+    //@JsonManagedReference
     private List<Room> rooms;
 
     public String getUsername() {

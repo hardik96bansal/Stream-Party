@@ -6,27 +6,46 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 
 
 @Entity
 public class Room implements Serializable{
 
+    
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private String roomId;
 
     private String roomName;
     private String privacy;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_username", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User admin;
     private boolean isActive;
     private Date lastActive;
     
-    @ElementCollection
+    //@ElementCollection
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST,CascadeType.MERGE},
+            mappedBy = "rooms")
+    //@JsonBackReference
     private Set<User> members;
     @ElementCollection
     private Set<User> connectedMembers;
@@ -64,15 +83,16 @@ public class Room implements Serializable{
         } 
     }
 
-    public Room(String roomName, User admin, String privacy) {
+    public Room(String roomId, String roomName, User admin, String privacy) {
+        this.roomId = roomId;
         this.roomName = roomName;
         this.admin = admin;
         this.privacy = privacy;
         this.isActive = true;
         this.members = new HashSet<User>();
         this.connectedMembers = new HashSet<User>();
-        members.add(admin);
-        connectedMembers.add(admin);
+        //members.add(admin);
+        //connectedMembers.add(admin);
     }
 
     public Room() {
