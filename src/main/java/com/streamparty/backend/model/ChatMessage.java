@@ -11,9 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -31,11 +28,12 @@ public class ChatMessage implements Serializable{
     private User sender;
 
     private Date timeStamp;
+    private String type;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "room_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIgnore
+    //@JsonIgnore
     private Room room;
 
     public long getId() {
@@ -78,10 +76,11 @@ public class ChatMessage implements Serializable{
         this.room = room;
     }
 
-    public ChatMessage(String message, User sender, Room room) {
+    public ChatMessage(String message, User sender, Room room, String type) {
         this.message = message;
         this.sender = sender;
         this.room = room;
+        this.type = type;
 
         Date currDateTime = Calendar.getInstance().getTime();
         this.timeStamp = currDateTime;
@@ -89,5 +88,13 @@ public class ChatMessage implements Serializable{
     }  
     
     public ChatMessage(){}
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
 }

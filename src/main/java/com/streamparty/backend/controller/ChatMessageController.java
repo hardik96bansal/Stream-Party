@@ -1,5 +1,6 @@
 package com.streamparty.backend.controller;
 
+import com.streamparty.backend.dto.ChatMessageDto;
 import com.streamparty.backend.model.ChatMessage;
 import com.streamparty.backend.model.Room;
 import com.streamparty.backend.model.User;
@@ -37,13 +38,13 @@ public class ChatMessageController {
     }
 
     @GetMapping("/room/{roomId}/chat")
-    public Page<ChatMessage> getAllChatByRoomId(@PathVariable("roomId") String roomId, Pageable pageable){
+    public Page<ChatMessageDto> getAllChatByRoomId(@PathVariable("roomId") String roomId, Pageable pageable){
         return chatMessageService.getAllMessagesByRoomId(roomId,pageable);
     }
 
-    @PostMapping("/chat/{roomId}/{username}")
+    @PostMapping("/chat/{roomId}/{username}/{type}")
     public ResponseEntity<String> createChatMessage(@PathVariable("roomId") String roomId, @PathVariable("username") String username,
-                                @RequestBody String chatMessage){
+                                @RequestBody String chatMessage, @PathVariable("type") String type){
 
         User sender = userService.getUserByUsername(username);
         Room room = roomService.getRoomById(roomId);  
@@ -51,7 +52,7 @@ public class ChatMessageController {
         if(sender==null || room==null){
             return new ResponseEntity<>("Invalid data passed",HttpStatus.BAD_REQUEST);
         }
-        chatMessageService.createChatMessage(chatMessage, sender, room);
+        chatMessageService.createChatMessage(chatMessage, sender, room, type);
         return new ResponseEntity<>("Message created",HttpStatus.OK);
     }
     

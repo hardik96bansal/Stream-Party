@@ -40,8 +40,14 @@ public class UserService {
         userRepository.save(newUser);
     }
 
-    public void updateUser(User user){
-        userRepository.save(user);
+    public void updateUser(User updatedUser){
+        User user = userRepository.findByUsername(updatedUser.getUsername());
+        if(user!=null){
+            user.setActive(true);
+            user.setPassword(updatedUser.getPassword());
+            user.setImage(updatedUser.getImage());
+            userRepository.save(user);
+        }
     }
 
     public void deleteUser(String username){
